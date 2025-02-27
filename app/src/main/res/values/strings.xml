@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ISENSmartCompanion</string>
+    <string name="title_activity_android_manifest">AndroidManifest</string>
 </resources>
