@@ -67,6 +67,22 @@ fun HistoryScreen(navController: NavController) {
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(bottom = 16.dp)
         )
+        // "Clear History" Button
+        Button(
+            onClick = {
+                scope.launch {
+                    chatDao.deleteAllChats()  // Delete all chats from the database
+                    chatHistory = emptyList() // Update UI after clearing history
+                }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ) {
+            Text(text = "Viderl'historique", color = MaterialTheme.colorScheme.onError)
+        }
+
 
         if (isLoading) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
@@ -111,7 +127,7 @@ fun ChatItem(chat: Chat) {
         ) {
             // Question de chat
             Text(
-                text = "Question: ${chat.question}",
+                text = "Q: ${chat.question}",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
@@ -119,7 +135,7 @@ fun ChatItem(chat: Chat) {
 
             // Réponse de chat sous la question
             Text(
-                text = "Reponse: ${chat.answer}",
+                text = "A: ${chat.answer}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(top = 4.dp) // Espacement entre la question et la réponse
@@ -133,6 +149,22 @@ fun ChatItem(chat: Chat) {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Ajouter un bouton si nécessaire, par exemple pour afficher plus de détails
+            Button(
+                onClick = {
+                    // Implémenter un comportement au clic si nécessaire, par exemple voir plus de détails
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text(
+                    text = "Suprimer de l'historique",
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
         }
     }
 }

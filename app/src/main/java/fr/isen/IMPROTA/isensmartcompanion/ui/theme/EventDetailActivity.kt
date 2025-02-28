@@ -182,6 +182,7 @@ private fun createNotificationChannel(context: Context) {
     }
 }
 
+
 private fun scheduleNotification(context: Context, event: Event) {
     val handler = Handler(Looper.getMainLooper())
     handler.postDelayed({
@@ -189,14 +190,20 @@ private fun scheduleNotification(context: Context, event: Event) {
     }, 10000) // 10 seconds delay
 }
 
+
 private fun sendNotification(context: Context, event: Event) {
+    // NotificationBuilder to construct the notification
     val builder = NotificationCompat.Builder(context, "event_channel")
-        .setSmallIcon(R.drawable.ic_launcher_foreground) // Replace with your icon
+        .setSmallIcon(R.drawable.ic_launcher_foreground) // Replace with your own icon
         .setContentTitle("Event Reminder: ${event.title}")
         .setContentText("Don't forget about ${event.title} on ${event.date}!")
         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setAutoCancel(true) // Automatically dismisses the notification when tapped
+        .setDefaults(NotificationCompat.DEFAULT_ALL) // Default sound, vibration, etc.
 
+    // Send the notification using NotificationManagerCompat
     with(NotificationManagerCompat.from(context)) {
+        // event.id.hashCode() is used to ensure a unique ID for each notification
         notify(event.id.hashCode(), builder.build())
     }
 }

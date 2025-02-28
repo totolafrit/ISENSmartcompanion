@@ -12,4 +12,7 @@ interface ChatDao {
 
     @Query("SELECT * FROM chat_history ORDER BY timestamp DESC")
     suspend fun getAllChats(): List<Chat>
+
+    @Query("DELETE FROM chat_history")
+    suspend fun deleteAllChats()
 }
