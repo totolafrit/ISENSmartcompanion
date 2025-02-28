@@ -40,6 +40,8 @@ import android.os.Parcel
 import android.os.Parcelable
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Brush
+import fr.isen.IMPROTA.isensmartcompanion.data.AppDatabase
+import fr.isen.IMPROTA.isensmartcompanion.data.Chat
 
 
 class MainActivity : ComponentActivity() {
@@ -251,6 +253,10 @@ class MainActivity : ComponentActivity() {
         val scope = rememberCoroutineScope()
         var chatHistory by remember { mutableStateOf<List<Pair<String, Boolean>>>(emptyList()) }
 
+        // Obtenez l'instance de la base de données
+        val db = AppDatabase.getDatabase(context)
+        val chatDao = db.chatDao()
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -294,16 +300,26 @@ class MainActivity : ComponentActivity() {
                 isLoading = true
                 chatHistory = chatHistory + (query to true)
 
+                // Sauvegarder la question dans la base de données
                 scope.launch {
+                    val newChat = Chat(question = query, answer = "Waiting for response...")
+                    chatDao.insertChat(newChat)
+
+                    // Récupérer la réponse et mettre à jour l'historique
                     geminiManager.generateContent(query).collect { response ->
                         isLoading = false
                         val newResponse = response.text ?: "Pas de réponse."
                         chatHistory = chatHistory + (newResponse to false)
+
+                        // Mettre à jour la réponse dans la base de données
+                        val updatedChat = Chat(question = query, answer = newResponse)
+                        chatDao.insertChat(updatedChat)
                     }
                 }
             })
         }
     }
+
 
     @Composable
     fun ChatBubble(message: String, isUser: Boolean) {
