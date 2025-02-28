@@ -27,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -35,6 +34,12 @@ import androidx.navigation.NavController
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CardDefaults
+
+
+
 
 @Composable
 fun EventScreen(navController: NavController) {
@@ -47,12 +52,7 @@ fun EventScreen(navController: NavController) {
             override fun onResponse(call: Call<List<Event>>, response: Response<List<Event>>) {
                 isLoading = false
                 if (response.isSuccessful) {
-                    val eventMap = response.body()
-                    if (eventMap != null) {
-                        events = eventMap
-                    } else {
-                        events = emptyList()
-                    }
+                    events = response.body() ?: emptyList()
                 } else {
                     Log.e("EventScreen", "Error fetching events: ${response.errorBody()}")
                 }
@@ -66,24 +66,33 @@ fun EventScreen(navController: NavController) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
-    )  {
-        EventList(events = events)
+    ) {
+        Text(
+            text = "Événements ISEN",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 16.dp)
+        )
+
         if (isLoading) {
-            Text("Loading...")
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         } else {
             EventList(events = events)
         }
     }
 }
 
+
 @Composable
 fun EventList(events: List<Event>) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp)
+        contentPadding = PaddingValues(8.dp)
     ) {
         items(events) { event ->
             EventItem(event = event)
@@ -91,10 +100,14 @@ fun EventList(events: List<Event>) {
     }
 }
 
+
 @Composable
 fun EventItem(event: Event) {
     val context = LocalContext.current
     Card(
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
@@ -109,36 +122,36 @@ fun EventItem(event: Event) {
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = event.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-                Text(
-                    text = event.date,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color.Red
-                )
-            }
+            // Titre de l'événement
+            Text(
+                text = event.title,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary
+            )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            // Date de l'événement sous le titre
+            Text(
+                text = event.date,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.tertiary,
+                modifier = Modifier.padding(top = 4.dp) // Espacement entre le titre et la date
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             Button(
                 onClick = {
                     val intent = Intent(context, EventDetailActivity::class.java)
                     intent.putExtra("event", event)
                     context.startActivity(intent)
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
                 Text(
                     text = "Voir Plus",
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }

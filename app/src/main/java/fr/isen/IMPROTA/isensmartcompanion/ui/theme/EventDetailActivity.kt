@@ -138,6 +138,12 @@ fun EventDetailScreen(event: Event) {
                 text = "l'ID est:" + event.id,
                 style = MaterialTheme.typography.bodyMedium
             )
+            Text(
+                text = event.category,
+                style = MaterialTheme.typography.headlineMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

@@ -8,13 +8,15 @@ data class Event(
     val date: String = "",
     val description: String = "",
     val imageUrl: String? = null,
-    val id: String = ""
+    val id: String = "",
+    val category: String = ""
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString() ?: "",
         parcel.readString(),
+        parcel.readString() ?: "",
         parcel.readString() ?: ""
     )
 
@@ -24,6 +26,7 @@ data class Event(
         parcel.writeString(description)
         parcel.writeString(imageUrl)
         parcel.writeString(id)
+        parcel.writeString(category)
     }
 
     override fun describeContents(): Int {

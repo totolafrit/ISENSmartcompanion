@@ -7,6 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -36,6 +38,9 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavController
 import android.os.Parcel
 import android.os.Parcelable
+import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.Brush
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -180,46 +185,151 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Header(modifier: Modifier = Modifier) {
         val context = LocalContext.current
-        Column(
+
+        Box(
             modifier = modifier
-                .background(Color.LightGray)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Top
+                .fillMaxWidth()
+                .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.primaryContainer
+                    )
+                )
+            )
+                .padding(vertical = 24.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.isenlogo),
-                contentDescription = context.getString(R.string.app_name),
-                modifier = Modifier.size(100.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                modifier = Modifier
+                    .padding(horizontal = 16.dp)
+                    .fillMaxWidth(0.9f)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.isenlogo),
+                        contentDescription = context.getString(R.string.app_name),
+                        modifier = Modifier
+                            .size(120.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text(
+                        text = "ISEN Smart Companion",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Votre assistant intelligent pour l'ISEN",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+    }
+
+
+    @Composable
+    fun ChatSection() {
+        val context = LocalContext.current
+        val geminiManager = remember { GeminiManager(context) }
+        var userQuery by remember { mutableStateOf("") }
+        var isLoading by remember { mutableStateOf(false) }
+        val scope = rememberCoroutineScope()
+        var chatHistory by remember { mutableStateOf<List<Pair<String, Boolean>>>(emptyList()) }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
-                text = "ISEN Smart Companion",
+                text = "Chat IA - ISEN",
                 style = MaterialTheme.typography.headlineMedium,
-                textAlign = TextAlign.Center
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 16.dp)
             )
+
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                    .padding(8.dp)
+            ) {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize(),
+                    reverseLayout = true
+                ) {
+                    items(chatHistory.reversed()) { (message, isUser) ->
+                        ChatBubble(message, isUser)
+                    }
+                }
+            }
+
+            if (isLoading) {
+                Spacer(modifier = Modifier.height(8.dp))
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            ChatInputField(onSend = { query ->
+                userQuery = query
+                isLoading = true
+                chatHistory = chatHistory + (query to true)
+
+                scope.launch {
+                    geminiManager.generateContent(query).collect { response ->
+                        isLoading = false
+                        val newResponse = response.text ?: "Pas de réponse."
+                        chatHistory = chatHistory + (newResponse to false)
+                    }
+                }
+            })
         }
     }
 
     @Composable
-    fun ChatSection() {
-        var userQuery by remember { mutableStateOf("") }
-        var displayedText by remember { mutableStateOf("") }
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+    fun ChatBubble(message: String, isUser: Boolean) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
         ) {
-            if (displayedText.isNotEmpty()) {
-                Text(text = displayedText)
+            Card(
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
+                ),
+                modifier = Modifier
+                    .padding(vertical = 4.dp, horizontal = 8.dp)
+                    .widthIn(min = 80.dp, max = 280.dp)
+            ) {
+                Text(
+                    text = message,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = if (isUser) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.padding(12.dp)
+                )
             }
-            ChatInputField(onSend = {
-                displayedText = "Vous avez demandé : $it"
-                userQuery = it
-            })
         }
     }
+
 
     @Composable
     fun ChatInputField(onSend: (String) -> Unit) {
@@ -228,7 +338,10 @@ class MainActivity : ComponentActivity() {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(8.dp)
+                .clip(RoundedCornerShape(40.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .padding(horizontal = 12.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             OutlinedTextField(
@@ -238,17 +351,16 @@ class MainActivity : ComponentActivity() {
                 singleLine = true,
                 modifier = Modifier
                     .weight(1f)
-                    .clip(RoundedCornerShape(40.dp)),
+                    .background(Color.Transparent),
                 keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Send),
                 keyboardActions = KeyboardActions(onSend = {
                     onSend(textState.text)
                     textState = TextFieldValue("")
                 }),
-                visualTransformation = VisualTransformation.None,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.LightGray,
-                    unfocusedContainerColor = Color.LightGray,
-                    disabledContainerColor = Color.LightGray,
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent,
+                    disabledContainerColor = Color.Transparent,
                     focusedBorderColor = Color.Transparent,
                     unfocusedBorderColor = Color.Transparent,
                     disabledBorderColor = Color.Transparent
@@ -263,12 +375,11 @@ class MainActivity : ComponentActivity() {
                     textState = TextFieldValue("")
                 },
                 modifier = Modifier.height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
-            )
-            {
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
                 Text(
                     text = "Envoyer",
-                    color = Color.Black
+                    color = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }
