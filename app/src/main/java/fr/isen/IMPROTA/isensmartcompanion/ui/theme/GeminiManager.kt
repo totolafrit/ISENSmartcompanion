@@ -3,9 +3,6 @@ package fr.isen.IMPROTA.isensmartcompanion
 import android.content.Context
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.GenerateContentResponse
-import com.google.ai.client.generativeai.type.GenerationConfig
-import com.google.ai.client.generativeai.type.HarmCategory
-import com.google.ai.client.generativeai.type.SafetySetting
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
