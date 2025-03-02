@@ -15,4 +15,9 @@ interface ChatDao {
 
     @Query("DELETE FROM chat_history")
     suspend fun deleteAllChats()
+
+    @Query("DELETE FROM chat_history WHERE id = :chatId")
+    suspend fun deleteChat(chatId: Int)
+
 }
+

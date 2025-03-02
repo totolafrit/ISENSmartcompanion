@@ -39,18 +39,23 @@ fun HistoryScreen(navController: NavController) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Accéder à la base de données
     val db = AppDatabase.getDatabase(context)
     val chatDao = db.chatDao()
 
     var chatHistory by remember { mutableStateOf<List<Chat>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Récupérer l'historique des chats au lancement de l'écran
     LaunchedEffect(Unit) {
         scope.launch {
             chatHistory = chatDao.getAllChats()
             isLoading = false
+        }
+    }
+
+    fun deleteChatById(chatId: Int) {
+        scope.launch {
+            chatDao.deleteChat(chatId)
+            chatHistory = chatHistory.filter { it.id.toInt() != chatId }
         }
     }
 
@@ -67,12 +72,12 @@ fun HistoryScreen(navController: NavController) {
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(bottom = 16.dp)
         )
-        // "Clear History" Button
+
         Button(
             onClick = {
                 scope.launch {
-                    chatDao.deleteAllChats()  // Delete all chats from the database
-                    chatHistory = emptyList() // Update UI after clearing history
+                    chatDao.deleteAllChats()
+                    chatHistory = emptyList()
                 }
             },
             colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
@@ -80,35 +85,35 @@ fun HistoryScreen(navController: NavController) {
                 .fillMaxWidth()
                 .padding(bottom = 16.dp)
         ) {
-            Text(text = "Viderl'historique", color = MaterialTheme.colorScheme.onError)
+            Text(text = "Vider l'historique", color = MaterialTheme.colorScheme.onError)
         }
-
 
         if (isLoading) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         } else {
-            ChatList(chatHistory)
+            ChatList(chatHistory, onDelete = ::deleteChatById)
         }
     }
 }
 
 
+
 @Composable
-fun ChatList(chatHistory: List<Chat>) {
+fun ChatList(chatHistory: List<Chat>, onDelete: (Int) -> Unit) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(8.dp)
     ) {
         items(chatHistory) { chat ->
-            ChatItem(chat = chat)
+            ChatItem(chat = chat, onDelete = onDelete)
         }
     }
 }
 
 
+
 @Composable
-fun ChatItem(chat: Chat) {
-    val context = LocalContext.current
+fun ChatItem(chat: Chat, onDelete: (Int) -> Unit) {
     Card(
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
@@ -116,16 +121,12 @@ fun ChatItem(chat: Chat) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)
-            .clickable {
-                // Ajouter un comportement au clic si nécessaire
-            }
     ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
-            // Question de chat
             Text(
                 text = "Q: ${chat.question}",
                 style = MaterialTheme.typography.titleLarge,
@@ -133,17 +134,15 @@ fun ChatItem(chat: Chat) {
                 color = MaterialTheme.colorScheme.primary
             )
 
-            // Réponse de chat sous la question
             Text(
                 text = "A: ${chat.answer}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
-                modifier = Modifier.padding(top = 4.dp) // Espacement entre la question et la réponse
+                modifier = Modifier.padding(top = 4.dp)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Affichage de la date de chat
             Text(
                 text = "Date: ${SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date(chat.timestamp))}",
                 style = MaterialTheme.typography.bodySmall,
@@ -152,18 +151,12 @@ fun ChatItem(chat: Chat) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Ajouter un bouton si nécessaire, par exemple pour afficher plus de détails
             Button(
-                onClick = {
-                    // Implémenter un comportement au clic si nécessaire, par exemple voir plus de détails
-                },
+                onClick = { onDelete(chat.id.toInt()) },
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
             ) {
-                Text(
-                    text = "Suprimer de l'historique",
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
+                Text(text = "Supprimer", color = MaterialTheme.colorScheme.onError)
             }
         }
     }
