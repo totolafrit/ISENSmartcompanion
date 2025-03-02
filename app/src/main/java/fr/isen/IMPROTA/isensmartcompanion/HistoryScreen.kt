@@ -1,31 +1,14 @@
 package fr.isen.IMPROTA.isensmartcompanion
 
-import android.os.Bundle
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import fr.isen.IMPROTA.isensmartcompanion.data.AppDatabase
@@ -45,6 +28,7 @@ fun HistoryScreen(navController: NavController) {
     var chatHistory by remember { mutableStateOf<List<Chat>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
+    // Charger les messages dès l'ouverture de l'écran
     LaunchedEffect(Unit) {
         scope.launch {
             chatHistory = chatDao.getAllChats()
@@ -52,6 +36,7 @@ fun HistoryScreen(navController: NavController) {
         }
     }
 
+    // Fonction pour supprimer une conversation spécifique
     fun deleteChatById(chatId: Int) {
         scope.launch {
             chatDao.deleteChat(chatId)
@@ -67,12 +52,13 @@ fun HistoryScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Historique des Chats",
+            text = "Historique des Conversations",
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
+        // Bouton pour vider l'historique
         Button(
             onClick = {
                 scope.launch {
@@ -91,26 +77,17 @@ fun HistoryScreen(navController: NavController) {
         if (isLoading) {
             CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         } else {
-            ChatList(chatHistory, onDelete = ::deleteChatById)
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(8.dp)
+            ) {
+                items(chatHistory) { chat ->
+                    ChatItem(chat = chat, onDelete = ::deleteChatById)
+                }
+            }
         }
     }
 }
-
-
-
-@Composable
-fun ChatList(chatHistory: List<Chat>, onDelete: (Int) -> Unit) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(8.dp)
-    ) {
-        items(chatHistory) { chat ->
-            ChatItem(chat = chat, onDelete = onDelete)
-        }
-    }
-}
-
-
 
 @Composable
 fun ChatItem(chat: Chat, onDelete: (Int) -> Unit) {
@@ -127,15 +104,16 @@ fun ChatItem(chat: Chat, onDelete: (Int) -> Unit) {
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
+            // Affichage de la question
             Text(
-                text = "Q: ${chat.question}",
+                text = "❓ ${chat.question}",
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.primary
             )
 
+            // Affichage de la réponse
             Text(
-                text = "A: ${chat.answer}",
+                text = "💬 ${chat.answer}",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(top = 4.dp)
@@ -143,14 +121,16 @@ fun ChatItem(chat: Chat, onDelete: (Int) -> Unit) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            // Affichage de la date
             Text(
-                text = "Date: ${SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date(chat.timestamp))}",
+                text = "📅 ${SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(Date(chat.timestamp))}",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Bouton pour supprimer une seule conversation
             Button(
                 onClick = { onDelete(chat.id.toInt()) },
                 modifier = Modifier.fillMaxWidth(),

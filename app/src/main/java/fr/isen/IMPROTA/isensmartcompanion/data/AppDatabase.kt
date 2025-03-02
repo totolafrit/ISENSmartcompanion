@@ -7,9 +7,12 @@ import androidx.room.RoomDatabase
 import fr.isen.IMPROTA.isensmartcompanion.ui.theme.ChatDao
 
 
-@Database(entities = [Chat::class], version = 1)
+
+@Database(entities = [Chat::class, Event::class, Course::class], version = 3, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun chatDao(): ChatDao
+    abstract fun eventDao(): EventDao
+    abstract fun courseDao(): CourseDao  // ✅ Ajout du DAO des cours
 
     companion object {
         @Volatile
@@ -20,8 +23,9 @@ abstract class AppDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
-                    "chat_database"
-                ).build()
+                    "isen_smart_companion_db"
+                ).fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

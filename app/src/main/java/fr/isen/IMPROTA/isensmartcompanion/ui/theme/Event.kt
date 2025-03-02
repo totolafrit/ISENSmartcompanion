@@ -1,16 +1,21 @@
-package fr.isen.IMPROTA.isensmartcompanion
+package fr.isen.IMPROTA.isensmartcompanion.data
 
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
+@Entity(tableName = "events")
 data class Event(
     val title: String = "",
-    val date: String = "",
+    val date: String = "", // Format: "dd/MM/yyyy"
     val description: String = "",
     val imageUrl: String? = null,
-    val id: String = "",
+    @PrimaryKey val id: String = "",
     val category: String = ""
 ) : Parcelable {
+    var hasNotification: Boolean = false
+
     constructor(parcel: Parcel) : this(
         parcel.readString() ?: "",
         parcel.readString() ?: "",

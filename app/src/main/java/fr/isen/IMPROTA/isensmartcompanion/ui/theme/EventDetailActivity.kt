@@ -46,6 +46,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import fr.isen.IMPROTA.isensmartcompanion.ui.theme.ISENSmartCompanionTheme
+import fr.isen.IMPROTA.isensmartcompanion.data.Event
+
 
 class EventDetailActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)

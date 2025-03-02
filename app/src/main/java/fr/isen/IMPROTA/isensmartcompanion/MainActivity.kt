@@ -24,7 +24,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.input.VisualTransformation
 import fr.isen.IMPROTA.isensmartcompanion.ui.theme.ISENSmartCompanionTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -38,10 +37,12 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.NavController
 import android.os.Parcel
 import android.os.Parcelable
+import androidx.compose.material.icons.filled.CalendarToday
 import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.Brush
 import fr.isen.IMPROTA.isensmartcompanion.data.AppDatabase
 import fr.isen.IMPROTA.isensmartcompanion.data.Chat
+
 
 
 class MainActivity : ComponentActivity() {
@@ -100,57 +101,45 @@ class MainActivity : ComponentActivity() {
         object Home : Screen("home", "Home")
         object Event : Screen("event", "Event")
         object History : Screen("history", "History")
+        object Agenda : Screen("agenda", "Agenda") // Ajout de l'Agenda
     }
+
 
     @Composable
     fun MainScreen() {
         val navController = rememberNavController()
-        val homeTab = Screen.Home
-        val eventTab = Screen.Event
-        val historyTab = Screen.History
-        val tabBarItems = listOf(homeTab, eventTab, historyTab)
+        val tabBarItems = listOf(Screen.Home, Screen.Event, Screen.History, Screen.Agenda) // Ajout de l'Agenda
 
         Scaffold(
             bottomBar = { TabView(tabBarItems, navController) }
         ) { innerPadding ->
             NavHost(
                 navController = navController,
-                startDestination = homeTab.route,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
+                startDestination = Screen.Home.route,
+                modifier = Modifier.padding(innerPadding)
             ) {
-                composable(homeTab.route) {
-                    HomeScreen(navController)
-                }
-                composable(eventTab.route) {
-                    EventScreen(navController)
-                }
-                composable(historyTab.route) {
-                    HistoryScreen(navController)
-                }
+                composable(Screen.Home.route) { HomeScreen(navController) }
+                composable(Screen.Event.route) { EventScreen(navController) }
+                composable(Screen.History.route) { HistoryScreen(navController) }
+                composable(Screen.Agenda.route) { AgendaScreen(navController) } // Ajout de l'Agenda
             }
         }
     }
 
+
     @Composable
     fun TabView(tabBarItems: List<Screen>, navController: NavController) {
         var selectedScreen by remember { mutableStateOf<Screen>(Screen.Home) }
+
         NavigationBar {
             tabBarItems.forEach { screen ->
                 NavigationBarItem(
                     icon = {
                         when (screen) {
                             Screen.Home -> Icon(Icons.Filled.Home, contentDescription = screen.name)
-                            Screen.Event -> Icon(
-                                Icons.Filled.DateRange,
-                                contentDescription = screen.name
-                            )
-
-                            Screen.History -> Icon(
-                                Icons.Filled.History,
-                                contentDescription = screen.name
-                            )
+                            Screen.Event -> Icon(Icons.Filled.DateRange, contentDescription = screen.name)
+                            Screen.History -> Icon(Icons.Filled.History, contentDescription = screen.name)
+                            Screen.Agenda -> Icon(Icons.Filled.CalendarToday, contentDescription = screen.name) // Ajout de l'Agenda
                         }
                     },
                     label = { Text(screen.name) },
@@ -169,6 +158,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 
     @Composable
     fun HomeScreen(navController: NavController) {

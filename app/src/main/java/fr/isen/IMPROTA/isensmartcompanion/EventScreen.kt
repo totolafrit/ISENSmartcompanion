@@ -37,6 +37,8 @@ import retrofit2.Response
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CardDefaults
+import fr.isen.IMPROTA.isensmartcompanion.data.Event
+
 
 
 
