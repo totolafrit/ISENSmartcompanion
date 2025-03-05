@@ -149,6 +149,11 @@ fun EventDetailScreen(event: Event) {
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
+                        text = "Lieu:   ${event.location}",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
                         text = "Category:   ${event.category}",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold

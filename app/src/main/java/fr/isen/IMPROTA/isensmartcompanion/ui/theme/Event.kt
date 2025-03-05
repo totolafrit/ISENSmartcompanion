@@ -12,7 +12,8 @@ data class Event(
     val description: String = "",
     val imageUrl: String? = null,
     @PrimaryKey val id: String = "",
-    val category: String = ""
+    val category: String = "",
+    val location: String = ""
 ) : Parcelable {
     var hasNotification: Boolean = false
 
@@ -22,7 +23,8 @@ data class Event(
         parcel.readString() ?: "",
         parcel.readString(),
         parcel.readString() ?: "",
-        parcel.readString() ?: ""
+        parcel.readString() ?: "",
+        location = parcel.readString() ?: ""
     )
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -32,6 +34,7 @@ data class Event(
         parcel.writeString(imageUrl)
         parcel.writeString(id)
         parcel.writeString(category)
+        parcel.writeString(location)
     }
 
     override fun describeContents(): Int {
